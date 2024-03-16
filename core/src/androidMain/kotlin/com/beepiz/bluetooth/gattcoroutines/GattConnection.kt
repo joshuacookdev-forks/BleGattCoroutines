@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import android.content.Context
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.beepiz.bluetooth.gattcoroutines.GattConnection.Companion.invoke
@@ -46,8 +47,9 @@ interface GattConnection {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         operator fun invoke(
             bluetoothDevice: BluetoothDevice,
+            context: Context,
             connectionSettings: ConnectionSettings = ConnectionSettings()
-        ): GattConnection = GattConnectionImpl(bluetoothDevice, connectionSettings)
+        ): GattConnection = GattConnectionImpl(bluetoothDevice, context, connectionSettings)
 
         /**
          * The characteristic used to enable notifications on the remote device in the

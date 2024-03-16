@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothProfile
+import android.content.Context
 import android.os.Build.VERSION.SDK_INT
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
@@ -14,8 +15,6 @@ import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import splitties.bitflags.hasFlag
-import splitties.init.appCtx
 import java.util.UUID
 import android.Manifest.permission.BLUETOOTH_CONNECT as BluetoothConnectPermission
 
@@ -29,6 +28,7 @@ internal class GattConnectionImpl
 @RequiresPermission(BluetoothConnectPermission)
 constructor(
     override val bluetoothDevice: BluetoothDevice,
+    private val context: Context,
     private val connectionSettings: GattConnection.ConnectionSettings
 ) : GattConnection {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
@@ -93,14 +93,14 @@ constructor(
             bluetoothGatt = with(connectionSettings) {
                 when {
                     SDK_INT >= 26 -> device.connectGatt(
-                        appCtx,
+                        context,
                         autoConnect,
                         callback,
                         transport,
                         phy
                     )
-                    SDK_INT >= 23 -> device.connectGatt(appCtx, autoConnect, callback, transport)
-                    else -> device.connectGatt(appCtx, autoConnect, callback)
+                    SDK_INT >= 23 -> device.connectGatt(context, autoConnect, callback, transport)
+                    else -> device.connectGatt(context, autoConnect, callback)
                 }
             } ?: error("No BluetoothGatt instance returned. Is Bluetooth supported and enabled?")
         } else {
@@ -192,6 +192,7 @@ constructor(
         } else BGD.DISABLE_NOTIFICATION_VALUE
         writeDescriptor(descriptor)
     }
+    inline fun Int.hasFlag(flag: Int): Boolean = flag and this == flag
 
     @RequiresPermission(BluetoothConnectPermission)
     override fun notifications(
